@@ -40,7 +40,7 @@ export async function startWatching() {
         const id =
           watchedSubscriptions.get(tx.to) || watchedSubscriptions.get(tx.from);
 
-        db.insert(transactions).values({
+        await db.insert(transactions).values({
           subscriptionId: id as string, // Assertion bc we know it exists from the if condition
           id: tx.hash,
           from: tx.from,
