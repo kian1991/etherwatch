@@ -3,10 +3,10 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { ETHAdressSchema } from '../../src/schemas';
 
 const addressesColumns = {
-  address: text().primaryKey().unique(),
+  address: text().primaryKey(),
   label: text(),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(), // i.e. label change
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(), // i.e. label change
 };
 
 // Drizzle

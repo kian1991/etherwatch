@@ -1,80 +1,101 @@
 import { BlockTag, ethers, Provider } from 'ethers';
 import { db } from '../../db/client';
-import { subscriptions, transactions } from '../../db/schema';
+import {
+  Address,
+  addresses,
+  subscriptions,
+  subscriptionsToAddresses,
+  Transaction,
+  transactions,
+} from '../../db/schema';
 import { and, eq } from 'drizzle-orm';
 import { ALCHEMY_WS_URL } from '../constants';
 
 const provider = new ethers.WebSocketProvider(ALCHEMY_WS_URL);
+const TIME_BETWEEN_CHECKS = 1000 * 60 * 1; // 1 minute
 
-// provider.on('connect', () => {
-//   console.log('Connected to Alchemy');
-// });
-
-// provider.on('error', (error) => {
-//   console.error('Error', error);
-// });
-
-let watchedSubscriptions = new Map<string, string>();
+let watchedAddresses: Map<string, Address>;
 
 async function loadwatchedSubscriptions() {
-  const addresses = await db
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.isActive, true));
+  const addr = await db.select().from(addresses);
 
-  watchedSubscriptions.clear();
+  if (!addr) return; // no addresses to watch
 
-  addresses.forEach(({ id, address }) => {
-    watchedSubscriptions.set(address, id);
-  });
+  console.log(`Currently watching ${addr.length} addresses`);
 
-  console.log(`Currently watching ${watchedSubscriptions.size} addresses`);
+  watchedAddresses = new Map(addr.map((a) => [a.address.toLowerCase(), a]));
 }
 
 export async function startWatching() {
   await loadwatchedSubscriptions();
 
-  provider.on('block', async (blockNumber: BlockTag) => {
-    console.log(`New block: ${blockNumber.toString()}`);
+  if (!watchedAddresses) {
+    console.log('No addresses to watch...Retrying in 1 minute');
+    setInterval(loadwatchedSubscriptions, TIME_BETWEEN_CHECKS);
+    return;
+  }
 
-    const block = await provider.getBlock(blockNumber);
+  // clear all pending listeners
+  await provider.removeAllListeners('pending');
 
-    if (!block) {
-      console.log('Block not found, skipping');
+  try {
+    provider.on('pending', async (hash) => {
+      const txData = await provider.getTransaction(hash);
+      process.stdout.write('.');
+      if (!txData?.to && !txData?.from) {
+        console.log('\nTransaction missing to or from field');
+        return;
+      }
+
+      const beaver =
+        '0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5' === txData.to ||
+        '0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5' === txData.from;
+
+      if (beaver) console.log('Beaver spotted!');
+      // check if the transaction is related to a watched address
+      const match =
+        watchedAddresses.get(txData.to!.toLowerCase()) ||
+        watchedAddresses.get(txData.from.toLowerCase());
+
+      if (!match) return;
+
+      console.log(
+        `\nTransaction ${hash} is related to the address ${match.address} saving...`
+      );
+
+      const subscription = await db
+        .select()
+        .from(subscriptions)
+        .leftJoin(
+          subscriptionsToAddresses,
+          and(eq(subscriptionsToAddresses.subscription, subscriptions.id))
+        )
+        .where(eq(subscriptionsToAddresses.address, match.address));
+
+      if (!subscription) {
+        console.log('Subscription not found');
+        return;
+      }
+
+      const transaction: Transaction = {
+        hash: txData.hash,
+        from: txData.from,
+        to: txData.to || '',
+        value: txData.value.toString(),
+        relatedAddress: match.address,
+      };
+
+      await db.insert(transactions).values(transaction).returning();
+      console.log('Transaction saved: ', transaction);
+    });
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === '23505') {
+      console.log('Transaction already saved. Skipping...');
       return;
     }
 
-    for (const hash of block.transactions) {
-      const tx = await provider.getTransaction(hash);
-      if (!tx) continue; // Skip if transaction not found
-      if (tx.to && watchedSubscriptions.has(tx.to)) {
-        const id = watchedSubscriptions.get(tx.to);
-        if (!id) continue; // Skip if subscription not found
-        const existingTx = await db
-          .select()
-          .from(transactions)
-          .where(
-            and(
-              eq(transactions.id, tx.hash),
-              eq(transactions.subscriptionId, id)
-            )
-          );
-        if (existingTx.length > 0) continue; // transaction already exists
-        await db
-          .insert()
-          .into(transactions)
-          .values({
-            id: tx.hash,
-            subscriptionId: id,
-            from: tx.from,
-            to: tx.to,
-            value: tx.value.toString(),
-            timestamp: new Date(block.timestamp * 1000),
-          });
-        console.log(`New transaction detected: ${tx.hash}`);
-      }
-    }
-  });
+    console.error('Error saving transaction', error);
+  }
 
-  setInterval(loadwatchedSubscriptions, 1000 * 60 * 1); // 1 minute
+  setInterval(loadwatchedSubscriptions, TIME_BETWEEN_CHECKS);
 }

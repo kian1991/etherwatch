@@ -1,20 +1,17 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, timestamp, text, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, timestamp, text, uuid, numeric } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { subscriptions } from './subscriptions';
 import { ETHAdressSchema } from '../../src/schemas';
-import { hash } from 'bun';
+import { addresses } from './addresses';
 
 const transactionsColumns = {
-  id: uuid().primaryKey().defaultRandom(),
-  hash: text().notNull(),
-  subscriptionId: uuid('subscription_id')
+  hash: text().notNull().primaryKey(),
+  relatedAddress: text('related_address')
     .notNull()
-    .references(() => subscriptions.id, { onDelete: 'cascade' }),
+    .references(() => addresses.address, { onDelete: 'cascade' }),
   from: text().notNull(),
   to: text().notNull(),
   value: text().notNull(), // text here because we don't need to do any arithmetic on this value
-  timestamp: timestamp(),
 };
 
 // Drizzle Schema
@@ -22,9 +19,9 @@ export const transactions = pgTable('transactions', transactionsColumns);
 
 // Relations
 export const transactionRelations = relations(transactions, ({ one }) => ({
-  subscription: one(subscriptions, {
-    fields: [transactions.subscriptionId],
-    references: [subscriptions.id],
+  relatedAddress: one(addresses, {
+    fields: [transactions.relatedAddress],
+    references: [addresses.address],
   }),
 }));
 

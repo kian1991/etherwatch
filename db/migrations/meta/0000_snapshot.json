@@ -1,5 +1,5 @@
 {
-  "id": "e1e64df4-7adf-4240-98f4-fe718ae459b7",
+  "id": "3e397f7a-d424-49ea-9f55-63f80684cd7f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -24,29 +24,21 @@
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "addresses_address_unique": {
-          "name": "addresses_address_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "address"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -55,22 +47,15 @@
       "name": "transactions",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
         "hash": {
           "name": "hash",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
-        "subscription_id": {
-          "name": "subscription_id",
-          "type": "uuid",
+        "related_address": {
+          "name": "related_address",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -91,25 +76,19 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "transactions_subscription_id_subscriptions_id_fk": {
-          "name": "transactions_subscription_id_subscriptions_id_fk",
+        "transactions_related_address_addresses_address_fk": {
+          "name": "transactions_related_address_addresses_address_fk",
           "tableFrom": "transactions",
-          "tableTo": "subscriptions",
+          "tableTo": "addresses",
           "columnsFrom": [
-            "subscription_id"
+            "related_address"
           ],
           "columnsTo": [
-            "id"
+            "address"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -199,6 +178,12 @@
           "notNull": false,
           "default": "now()"
         },
+        "value_condition": {
+          "name": "value_condition",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
         "is_active": {
           "name": "is_active",
           "type": "boolean",
@@ -245,22 +230,7 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "subscriptionsToAddresses_subscription_unique": {
-          "name": "subscriptionsToAddresses_subscription_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "subscription"
-          ]
-        },
-        "subscriptionsToAddresses_address_id_unique": {
-          "name": "subscriptionsToAddresses_address_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "address_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
