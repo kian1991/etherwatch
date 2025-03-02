@@ -19,10 +19,10 @@ app.get('/summary', async (c) => {
 });
 
 // start the watcher
-startWatching()
-  .catch(console.error)
-  .then(() => {
-    console.log('Watcher started');
-  });
+// startWatching()
+//   .catch(console.error)
+//   .then(() => {
+//     console.log('Watcher started');
+//   });
 
 export default app;

@@ -6,6 +6,7 @@ import {
   uuid,
   text,
   primaryKey,
+  numeric,
 } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { subscriptions } from './subscriptions';
@@ -22,6 +23,7 @@ const subscriptionsToAddressesColumns = {
     .unique(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+  valueCondition: numeric('value_condition'),
   isActive: boolean('is_active').notNull().default(true),
 };
 
@@ -48,12 +50,16 @@ export const subscriptionToAddressesRelations = relations(
 );
 
 // TS
-export type SubscriptionToAddress = typeof subscriptions.$inferSelect;
-export type NewSubscriptionToAddress = typeof subscriptions.$inferInsert;
+export type SubscriptionToAddress =
+  typeof subscriptionsToAddresses.$inferSelect;
+export type NewSubscriptionToAddress =
+  typeof subscriptionsToAddresses.$inferInsert;
 
 // Zod
-export const InsertSubscriptionToAddressSchema =
-  createInsertSchema(subscriptions);
+export const InsertSubscriptionToAddressSchema = createInsertSchema(
+  subscriptionsToAddresses
+);
 
-export const SelectSubscriptionToAddressSchema =
-  createSelectSchema(subscriptions);
+export const SelectSubscriptionToAddressSchema = createSelectSchema(
+  subscriptionsToAddresses
+);

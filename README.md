@@ -39,7 +39,8 @@ To subscribe to ETH Address:
 POST localhost:3000/subscriptions
 {
     "email": "kianluetke@gmail.com",
-    "address": "<ETH_ADDRESS>"
+    "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "valueCondition": 0.05 // optional in ETH (for minimum value)
 }
 ```
 

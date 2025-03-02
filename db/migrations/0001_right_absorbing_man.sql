@@ -1,0 +1,1 @@
+ALTER TABLE "subscriptionsToAddresses" ADD COLUMN "value_condition" numeric;
