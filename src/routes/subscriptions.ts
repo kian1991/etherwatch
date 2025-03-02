@@ -9,16 +9,11 @@ import {
 import { db } from '../../db/client';
 import { ETHAdressSchema } from '../schemas';
 import { eq } from 'drizzle-orm';
+import { SubscriptionPostSchema } from '../types';
+import { SubscriptionsModel } from '../models/subscriptions';
 
 // create router
 export const subscriptionRouter = new Hono();
-
-const SubscriptionPostSchema = InsertSubscriptionSchema.and(
-  z.object({
-    address: ETHAdressSchema,
-    valueCondition: z.number().optional(), // for examle min. ETH
-  })
-);
 
 subscriptionRouter.post('/', async (c) => {
   try {
@@ -32,38 +27,25 @@ subscriptionRouter.post('/', async (c) => {
     // Valid data here
     const { email, address, valueCondition } = parseResult.data;
 
-    // insertion logic
-    let insertedSubToAdd;
-    await db.transaction(async (tx) => {
-      let subscription = await tx
-        .select()
-        .from(subscriptions)
-        .where(eq(subscriptions.email, email));
+    // Insert subscription
+    const subscription = await SubscriptionsModel.findOrCreateSubscription(
+      email
+    );
 
-      if (subscription.length === 0) {
-        subscription = await tx
-          .insert(subscriptions)
-          .values({ email })
-          .returning();
-      }
+    // Insert address
+    const insertedAddress = await SubscriptionsModel.findOrCreateAddress(
+      address
+    );
 
-      const existingAddress = await tx
-        .select()
-        .from(addresses)
-        .where(eq(addresses.address, address));
+    // Insert subscription to address
+    const insertedSubToAdd =
+      await SubscriptionsModel.insertSubscriptionToAddress(
+        subscription.id,
+        insertedAddress.address,
+        valueCondition
+      );
 
-      if (existingAddress.length === 0) {
-        await tx.insert(addresses).values({ address });
-      }
-
-      insertedSubToAdd = await tx.insert(subscriptionsToAddresses).values({
-        subscription: subscription[0].id,
-        address,
-        valueCondition: valueCondition?.toString(),
-      });
-    });
-
-    return c.json({ data: { ...insertedSubToAdd![0], email } }, 201); // Assertion bc it'd have thrown an error if it was already in db
+    return c.json({ data: { ...insertedSubToAdd, email } }, 201); // Assertion bc it'd have thrown an error if it was already in db
   } catch (error) {
     console.error(error);
 

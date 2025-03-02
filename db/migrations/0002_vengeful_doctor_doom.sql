@@ -1,0 +1,2 @@
+ALTER TABLE "subscriptionsToAddresses" DROP CONSTRAINT "subscriptionsToAddresses_subscription_unique";--> statement-breakpoint
+ALTER TABLE "subscriptionsToAddresses" DROP CONSTRAINT "subscriptionsToAddresses_address_id_unique";

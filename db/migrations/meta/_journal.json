@@ -15,6 +15,13 @@
       "when": 1740950884421,
       "tag": "0001_right_absorbing_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1740953430927,
+      "tag": "0002_vengeful_doctor_doom",
+      "breakpoints": true
     }
   ]
 }

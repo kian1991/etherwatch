@@ -15,12 +15,10 @@ import { addresses } from './addresses';
 const subscriptionsToAddressesColumns = {
   subscription: uuid('subscription')
     .notNull()
-    .references(() => subscriptions.id, { onDelete: 'cascade' })
-    .unique(),
+    .references(() => subscriptions.id, { onDelete: 'cascade' }),
   address: text('address_id')
     .notNull()
-    .references(() => addresses.address, { onDelete: 'cascade' })
-    .unique(),
+    .references(() => addresses.address, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
   valueCondition: numeric('value_condition'),
