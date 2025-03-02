@@ -1,43 +1,49 @@
 {
-  "id": "99e6ac72-877f-42fc-ad32-0e6979b7e501",
+  "id": "e1e64df4-7adf-4240-98f4-fe718ae459b7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.emails": {
-      "name": "emails",
+    "public.addresses": {
+      "name": "addresses",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "email": {
-          "name": "email",
+        "address": {
+          "name": "address",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
+        "label": {
+          "name": "label",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": true
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "emails_email_unique": {
-          "name": "emails_email_unique",
+        "addresses_address_unique": {
+          "name": "addresses_address_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "email"
+            "address"
           ]
         }
       },
@@ -51,8 +57,15 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
         "subscription_id": {
@@ -119,14 +132,55 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "email_id": {
-          "name": "email_id",
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "subscriptions_email_unique": {
+          "name": "subscriptions_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.subscriptionsToAddresses": {
+      "name": "subscriptionsToAddresses",
+      "schema": "",
+      "columns": {
+        "subscription": {
+          "name": "subscription",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "address": {
-          "name": "address",
+        "address_id": {
+          "name": "address_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -155,22 +209,58 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "subscriptions_email_id_emails_id_fk": {
-          "name": "subscriptions_email_id_emails_id_fk",
-          "tableFrom": "subscriptions",
-          "tableTo": "emails",
+        "subscriptionsToAddresses_subscription_subscriptions_id_fk": {
+          "name": "subscriptionsToAddresses_subscription_subscriptions_id_fk",
+          "tableFrom": "subscriptionsToAddresses",
+          "tableTo": "subscriptions",
           "columnsFrom": [
-            "email_id"
+            "subscription"
           ],
           "columnsTo": [
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "subscriptionsToAddresses_address_id_addresses_address_fk": {
+          "name": "subscriptionsToAddresses_address_id_addresses_address_fk",
+          "tableFrom": "subscriptionsToAddresses",
+          "tableTo": "addresses",
+          "columnsFrom": [
+            "address_id"
+          ],
+          "columnsTo": [
+            "address"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "compositePrimaryKeys": {
+        "subscriptionsToAddresses_subscription_address_id_pk": {
+          "name": "subscriptionsToAddresses_subscription_address_id_pk",
+          "columns": [
+            "subscription",
+            "address_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "subscriptionsToAddresses_subscription_unique": {
+          "name": "subscriptionsToAddresses_subscription_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "subscription"
+          ]
+        },
+        "subscriptionsToAddresses_address_id_unique": {
+          "name": "subscriptionsToAddresses_address_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "address_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

@@ -3,15 +3,17 @@ import { pgTable, timestamp, text, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { subscriptions } from './subscriptions';
 import { ETHAdressSchema } from '../../src/schemas';
+import { hash } from 'bun';
 
 const transactionsColumns = {
-  id: text('id').primaryKey(), // We use the transaction hash as the primary key
+  id: uuid().primaryKey().defaultRandom(),
+  hash: text().notNull(),
   subscriptionId: uuid('subscription_id')
     .notNull()
     .references(() => subscriptions.id, { onDelete: 'cascade' }),
-  from: text('from').notNull(),
-  to: text('to').notNull(),
-  value: text('value').notNull(), // text here because we don't need to do any arithmetic on this value
+  from: text().notNull(),
+  to: text().notNull(),
+  value: text().notNull(), // text here because we don't need to do any arithmetic on this value
   timestamp: timestamp(),
 };
 
@@ -31,9 +33,9 @@ export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
 
 // Zod Schemata
-export const insertTransactionSchema = createInsertSchema(transactions, {
+export const InsertTransactionSchema = createInsertSchema(transactions, {
   // custom validation
   to: ETHAdressSchema,
   from: ETHAdressSchema,
 });
-export const selectTransactionSchema = createSelectSchema(transactions);
+export const SelectTransactionSchema = createSelectSchema(transactions);

@@ -1,3 +1,4 @@
 export * from './transactions';
 export * from './subscriptions';
-export * from './emails';
+export * from './subscriptions_addresses';
+export * from './addresses';
