@@ -2,6 +2,7 @@
 
 This is a simple backend service to watch for transactions on the Ethereum Blockchain. It uses the `bun`, `drizzle` ORM and `hono` web framework. Later it will be part of a larger project to watch for transactions and notify users via email.
 
+![screenshot of summary](./screen.png)
 
 ## Database Design
 

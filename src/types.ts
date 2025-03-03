@@ -12,6 +12,6 @@ export const SubscriptionPostSchema = InsertSubscriptionSchema.and(
 
 export type SubscriptionPost = z.infer<typeof SubscriptionPostSchema>;
 
-export type SubscriptionWithTransactions = ReturnType<
-  typeof SubscriptionsModel.findAllSubscriptionsWithTransactions
+export type SubscriptionWithTransactions = Awaited<
+  ReturnType<typeof SubscriptionsModel.findSubscriptionsWithTransactions>
 >;

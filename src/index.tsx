@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { subscriptionRouter } from './routes/subscriptions';
 import { startWatching } from './services/watcher';
-import { getSubscriptionsWithTransactions } from './services/mailer';
-import { SummaryEmail } from './emails/summary';
+import { Summary } from './emails/summary';
+import { SubscriptionsModel } from './models/subscriptions';
 
 const app = new Hono();
 
@@ -14,11 +14,12 @@ app.get('/', (c) => {
 });
 
 app.get('/summary', async (c) => {
-  const subs = await getSubscriptionsWithTransactions();
-  return c.html(<SummaryEmail data={subs} />);
+  const subs = await SubscriptionsModel.findSubscriptionsWithTransactions();
+
+  return c.html(<Summary data={subs} />);
 });
 
 // start the watcher
-startWatching().catch(console.error);
+// startWatching().catch(console.error);
 
 export default app;

@@ -4,10 +4,8 @@ import {
   subscriptions,
   addresses,
   subscriptionsToAddresses,
-  Address,
   SubscriptionToAddress,
 } from '../../db/schema';
-import { QueryResult } from 'pg';
 
 export class SubscriptionsModel {
   static async findOrCreateSubscription(email: string) {
@@ -61,8 +59,11 @@ export class SubscriptionsModel {
     return result[0];
   }
 
-  static async findAllSubscriptionsWithTransactions() {
+  static async findSubscriptionsWithTransactions(email?: string) {
+    // check for set mail. Drizzle ignores undefined where-clauses by default
+    const whereCondition = email ? eq(subscriptions.email, email) : undefined;
     const subs = await db.query.subscriptions.findMany({
+      where: whereCondition,
       with: {
         subscriptionsToAddresses: {
           columns: {
