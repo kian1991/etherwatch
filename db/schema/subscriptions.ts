@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, timestamp, uuid, text } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { ETHAdressSchema } from '../../src/schemas';
+import { subscriptionsToAddresses } from './subscriptions_addresses';
 
 const subscriptionsColumns = {
   id: uuid().primaryKey().defaultRandom(),
@@ -12,6 +12,10 @@ const subscriptionsColumns = {
 
 // Drizzle
 export const subscriptions = pgTable('subscriptions', subscriptionsColumns);
+
+export const subscriptionRelations = relations(subscriptions, ({ many }) => ({
+  subscriptionsToAddresses: many(subscriptionsToAddresses),
+}));
 
 // TS
 export type Subscription = typeof subscriptions.$inferSelect;

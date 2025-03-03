@@ -1,4 +1,5 @@
 import { InsertSubscriptionSchema } from '../db/schema';
+import { SubscriptionsModel } from './models/subscriptions';
 import { ETHAdressSchema } from './schemas';
 import { z } from 'zod';
 
@@ -10,3 +11,7 @@ export const SubscriptionPostSchema = InsertSubscriptionSchema.and(
 );
 
 export type SubscriptionPost = z.infer<typeof SubscriptionPostSchema>;
+
+export type SubscriptionWithTransactions = ReturnType<
+  typeof SubscriptionsModel.findAllSubscriptionsWithTransactions
+>;

@@ -60,4 +60,26 @@ export class SubscriptionsModel {
       .returning();
     return result[0];
   }
+
+  static async findAllSubscriptionsWithTransactions() {
+    const subs = await db.query.subscriptions.findMany({
+      with: {
+        subscriptionsToAddresses: {
+          columns: {
+            address: true,
+            isActive: true,
+            valueCondition: true,
+          },
+          with: {
+            address: {
+              with: {
+                transactions: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return subs;
+  }
 }

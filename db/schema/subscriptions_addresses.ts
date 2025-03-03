@@ -27,7 +27,7 @@ const subscriptionsToAddressesColumns = {
 
 // Drizzle
 export const subscriptionsToAddresses = pgTable(
-  'subscriptionsToAddresses',
+  'subscriptions_to_addresses',
   subscriptionsToAddressesColumns,
   (table) => [primaryKey({ columns: [table.subscription, table.address] })]
 );
